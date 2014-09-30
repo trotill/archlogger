@@ -1,18 +1,18 @@
 archlogger
 ==========
 
-##Create required files for automake:
+####Create required files for automake:
 
     touch NEWS README AUTHORS ChangeLog
 
-##Generate configure:
+####Generate configure:
 
     autoreconfig -ifv
 
-##Configure archlogger:
+####Configure archlogger:
 
     ./configure
 
-##Compile archlogger:
+####Compile archlogger:
 
     make
