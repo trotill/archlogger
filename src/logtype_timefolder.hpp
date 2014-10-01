@@ -111,7 +111,7 @@ protected:
     /* SWA */
 
 public:
-    LogTypeTimeFolder(const LogType&);
+    LogTypeTimeFolder(LogType&);
     virtual ~LogTypeTimeFolder();
 
     virtual bool validate();

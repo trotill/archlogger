@@ -13,6 +13,7 @@ namespace ini
     const static std::string VAR_SWA_STORAGETYPE = "SWAStorageType";
     const static std::string VAR_SWA_IP          = "SWAIP";
     const static std::string VAR_SWA_REMOTEPORT  = "SWARemotePort";
+    const static std::string VAR_SWA_SOURCEPORT  = "SWASourcePort";
 
     const static std::string TF_SECTION                      = "SWASettings";
     const static std::string VAR_TF_SWA_PATH                 = "tfSWAPath";
@@ -29,6 +30,7 @@ namespace ini
         static const uint8_t storageType     = 1;
         static const std::string ipAddress   = "127.0.0.1";
         static const uint16_t remotePort     = 9001;
+        static const uint16_t sourcePort     = 0;
 
         /* default values for TimeFolder */
         namespace tf {

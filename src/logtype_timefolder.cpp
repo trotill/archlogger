@@ -147,7 +147,7 @@ static void *thread_udp_recv (void *arg)
 }
 
 
-LogTypeTimeFolder::LogTypeTimeFolder(const LogType& parent):
+LogTypeTimeFolder::LogTypeTimeFolder(LogType& parent):
     LogType(parent)
 {
     pthread_mutex_init(&lock_file, NULL);

@@ -39,26 +39,27 @@ private:
     uint8_t     __storageType;
     std::string __ipAddress;
     uint16_t    __remotePort;
-    uint16_t    __port;
+    uint16_t    __sourcePort;
 
 private:
     bool parseStorageType();
     bool parseIpAddress();
     bool parseRemotePort();
+    bool parseSourcePort();
 
 public:
     void setConfigFile(const std::string&);
     void setStorageType(const uint8_t);
     void setIpAddress(const std::string&);
     void setRemotePort(const uint16_t);
-    void setPort(const uint16_t);
+    void setSourcePort(const uint16_t);
 
 public:
     std::string getConfigFile() const;
     uint8_t     getStorageType() const;
     std::string getIpAddress() const;
     uint16_t    getRemotePort() const;
-    uint16_t    getPort() const;
+    uint16_t    getSourcePort() const;
 
     std::string getStorageTypeAsString() const;
     /* INI-config */
@@ -83,6 +84,9 @@ private:
     boost::asio::io_service        __io_service;
     boost::asio::ip::udp::endpoint *__udp_remote_endpoint;
     boost::asio::ip::udp::socket   *__udp_socket;
+
+protected:
+    void closeUdp();
 
 public:
     boost::asio::ip::udp::socket*   getUdpSocket();
@@ -111,7 +115,7 @@ public:
 
 public:
     LogType();
-    LogType(const LogType&);
+    LogType(LogType&);
     virtual ~LogType();
 
     virtual bool validate();

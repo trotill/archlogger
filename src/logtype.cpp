@@ -19,7 +19,7 @@ LogType::LogType()
     __storageType = ini::settings::storageType;
     __ipAddress = ini::settings::ipAddress;
     __remotePort = ini::settings::remotePort;
-    __port = 0;
+    __sourcePort = ini::settings::sourcePort;
 
     __swaParser = boost::make_shared<SWAParser>(
         boost::bind(&LogType::callbackSWA, this, _1, _2, _3));
@@ -37,15 +37,17 @@ LogType::LogType()
     __udp_remote_endpoint = NULL;
 }
 
-LogType::LogType(const LogType& copy):
+LogType::LogType(LogType& copy):
     LogSyslog(false)
 {
+    copy.closeUdp();
+
     setVerbose(copy.getVerbose());
     setConfigFile(copy.getConfigFile());
     setStorageType(copy.getStorageType());
     setIpAddress(copy.getIpAddress());
     setRemotePort(copy.getRemotePort());
-    setPort(copy.getPort());
+    setSourcePort(copy.getSourcePort());
 
     __swaParser = boost::make_shared<SWAParser>(
         boost::bind(&LogType::callbackSWA, this, _1, _2, _3));
@@ -71,7 +73,7 @@ LogType::LogType(const LogType& copy):
         __io_service,
         boost::asio::ip::udp::endpoint(
             boost::asio::ip::address::from_string(copy.getIpAddress()),
-            copy.getPort()));
+            copy.getSourcePort()));
     __udp_remote_endpoint = new boost::asio::ip::udp::endpoint(
         boost::asio::ip::udp::endpoint(
             boost::asio::ip::address::from_string(copy.getIpAddress()),
@@ -81,20 +83,7 @@ LogType::LogType(const LogType& copy):
 LogType::~LogType()
 {
     __swaParser.reset();
-
-    if (__udp_socket != NULL) {
-        __udp_socket->cancel();
-        __udp_socket->close();
-        delete __udp_socket;
-        __udp_socket = NULL;
-    }
-    if (__udp_remote_endpoint != NULL) {
-        delete __udp_remote_endpoint;
-        __udp_remote_endpoint = NULL;
-    }
-
-    __io_service.stop();
-    __io_service.reset();
+    closeUdp();
 }
 
 void LogType::setConfigFile(const std::string& configFile)
@@ -117,9 +106,9 @@ void LogType::setRemotePort(const uint16_t remotePort)
     __remotePort = remotePort;
 }
 
-void LogType::setPort(const uint16_t port)
+void LogType::setSourcePort(const uint16_t sourcePort)
 {
-    __port = port;
+    __sourcePort = sourcePort;
 }
 
 std::string LogType::getConfigFile() const
@@ -142,9 +131,9 @@ uint16_t LogType::getRemotePort() const
     return __remotePort;    
 }
 
-uint16_t LogType::getPort() const
+uint16_t LogType::getSourcePort() const
 {
-    return __port;
+    return __sourcePort;
 }
 
 std::string LogType::getStorageTypeAsString() const
@@ -226,6 +215,28 @@ bool LogType::parseRemotePort()
     return true;
 }
 
+bool LogType::parseSourcePort()
+{
+    setSourcePort( iniGetValue( ini::SECTION,
+        ini::VAR_SWA_SOURCEPORT, ini::settings::sourcePort ));
+
+    if (iniGetError())
+    {
+        writeError( "Can't get 'Source Port'" );
+        return false;
+    }
+
+    if (getSourcePort() == UINT16_MAX)
+    {
+        writeError( "'Source Port' invalid" );
+        return false;
+    }
+
+    writeInfo ( "Source Port = %d", getSourcePort());
+
+    return true;
+}
+
 bool LogType::parseSWA(const uint8_t* input) const
 {
     return __swaParser.get()->parseData(input);
@@ -263,14 +274,15 @@ bool LogType::validate()
 
     bool result = parseStorageType()
                     && parseIpAddress()
-                    && parseRemotePort();
+                    && parseRemotePort()
+                    && parseSourcePort();
 
     if (result) {
         __udp_socket = new boost::asio::ip::udp::socket(
             __io_service,
             boost::asio::ip::udp::endpoint(
                 boost::asio::ip::address::from_string(getIpAddress()),
-                getPort()));
+                getSourcePort()));
         __udp_remote_endpoint = new boost::asio::ip::udp::endpoint(
             boost::asio::ip::udp::endpoint(
                 boost::asio::ip::address::from_string(getIpAddress()),
@@ -330,4 +342,21 @@ boost::asio::ip::udp::endpoint*
 LogType::getUdpRemoteEndpoint()
 {
     return __udp_remote_endpoint;
+}
+
+void LogType::closeUdp()
+{
+    if (__udp_socket != NULL) {
+        __udp_socket->cancel();
+        __udp_socket->close();
+        delete __udp_socket;
+        __udp_socket = NULL;
+    }
+    if (__udp_remote_endpoint != NULL) {
+        delete __udp_remote_endpoint;
+        __udp_remote_endpoint = NULL;
+    }
+
+    __io_service.stop();
+    __io_service.reset();
 }
