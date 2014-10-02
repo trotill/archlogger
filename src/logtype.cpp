@@ -20,6 +20,7 @@ LogType::LogType()
     __ipAddress = ini::settings::ipAddress;
     __remotePort = ini::settings::remotePort;
     __sourcePort = ini::settings::sourcePort;
+    __udpBufferSize = ini::settings::udpBufferSize;
 
     __swaParser = boost::make_shared<SWAParser>(
         boost::bind(&LogType::callbackSWA, this, _1, _2, _3));
@@ -48,6 +49,7 @@ LogType::LogType(LogType& copy):
     setIpAddress(copy.getIpAddress());
     setRemotePort(copy.getRemotePort());
     setSourcePort(copy.getSourcePort());
+    setUdpBufferSize(copy.getUdpBufferSize());
 
     __swaParser = boost::make_shared<SWAParser>(
         boost::bind(&LogType::callbackSWA, this, _1, _2, _3));
@@ -74,6 +76,10 @@ LogType::LogType(LogType& copy):
         boost::asio::ip::udp::endpoint(
             boost::asio::ip::address::from_string(copy.getIpAddress()),
             copy.getSourcePort()));
+    if (__udp_socket != NULL) {
+        boost::asio::socket_base::receive_buffer_size option(copy.getUdpBufferSize());
+        __udp_socket->set_option(option);
+    }
     __udp_remote_endpoint = new boost::asio::ip::udp::endpoint(
         boost::asio::ip::udp::endpoint(
             boost::asio::ip::address::from_string(copy.getIpAddress()),
@@ -111,6 +117,11 @@ void LogType::setSourcePort(const uint16_t sourcePort)
     __sourcePort = sourcePort;
 }
 
+void LogType::setUdpBufferSize(const uint64_t udpBufferSize)
+{
+    __udpBufferSize = udpBufferSize;
+}
+
 std::string LogType::getConfigFile() const
 {
     return __configFile;
@@ -134,6 +145,11 @@ uint16_t LogType::getRemotePort() const
 uint16_t LogType::getSourcePort() const
 {
     return __sourcePort;
+}
+
+uint64_t LogType::getUdpBufferSize() const
+{
+    return __udpBufferSize;
 }
 
 std::string LogType::getStorageTypeAsString() const
@@ -237,6 +253,30 @@ bool LogType::parseSourcePort()
     return true;
 }
 
+bool LogType::parseUdpBufferSize()
+{
+    setUdpBufferSize( human2size( iniGetValue(  ini::SECTION,
+        ini::VAR_SWA_UDPBUFFERSIZE, size2human(ini::settings::udpBufferSize) )));
+
+    if (iniGetError())
+    {
+        writeError( "Can't get 'UDP Buffer Size'" );
+        return false;
+    }
+
+    if ( getUdpBufferSize() == 0 )
+    {
+        writeError( "'UDP Buffer Size' invalid" );
+        return false;
+    }
+
+    writeInfo ( "UDP Buffer Size = %s (%lu bytes)",
+                size2human(getUdpBufferSize()).c_str(),
+                getUdpBufferSize());
+
+    return true;
+}
+
 bool LogType::parseSWA(const uint8_t* input) const
 {
     return __swaParser.get()->parseData(input);
@@ -275,7 +315,8 @@ bool LogType::validate()
     bool result = parseStorageType()
                     && parseIpAddress()
                     && parseRemotePort()
-                    && parseSourcePort();
+                    && parseSourcePort()
+                    && parseUdpBufferSize();
 
     if (result) {
         __udp_socket = new boost::asio::ip::udp::socket(

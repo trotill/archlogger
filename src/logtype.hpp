@@ -40,12 +40,14 @@ private:
     std::string __ipAddress;
     uint16_t    __remotePort;
     uint16_t    __sourcePort;
+    uint64_t    __udpBufferSize;
 
 private:
     bool parseStorageType();
     bool parseIpAddress();
     bool parseRemotePort();
     bool parseSourcePort();
+    bool parseUdpBufferSize();
 
 public:
     void setConfigFile(const std::string&);
@@ -53,6 +55,7 @@ public:
     void setIpAddress(const std::string&);
     void setRemotePort(const uint16_t);
     void setSourcePort(const uint16_t);
+    void setUdpBufferSize(const uint64_t);
 
 public:
     std::string getConfigFile() const;
@@ -60,6 +63,7 @@ public:
     std::string getIpAddress() const;
     uint16_t    getRemotePort() const;
     uint16_t    getSourcePort() const;
+    uint64_t    getUdpBufferSize() const;
 
     std::string getStorageTypeAsString() const;
     /* INI-config */

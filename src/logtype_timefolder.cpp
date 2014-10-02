@@ -935,6 +935,33 @@ void LogTypeTimeFolder::callbackSWA(const uint8_t typeId, const uint16_t dataLen
                 PTHREAD_CREATE(gc, "GC");
                 PTHREAD_CREATE(create_dir, "create dir");
                 PTHREAD_CREATE(create_file, "create file");
+            } else {
+
+                uint8_t swahello[10];
+                swahello[0] = 0x00;
+                swahello[1] = 0x00;
+                swahello[2] = 0x00;
+                swahello[3] = 0x06;
+                swahello[4] = 0x68;
+                swahello[5] = 0x65;
+                swahello[6] = 0x6C;
+                swahello[7] = 0x6C;
+                swahello[8] = 0x6F;
+                swahello[9] = 0x00;
+
+
+                if (!isTerminate()
+                    && (getUdpSocket() != NULL)
+                    && (getUdpRemoteEndpoint() != NULL))
+                {
+                    boost::system::error_code ignored_error;
+
+                    getUdpSocket()->send_to(
+                            boost::asio::buffer(swahello),
+                            *(getUdpRemoteEndpoint()),
+                            0,
+                            ignored_error);
+                }
             }
 
             break;
