@@ -94,6 +94,10 @@ public:
 private:
     CSVWorkerPtr    __csvWorker;
     bool            __csvSetMaxIndex;
+
+    CSVWorkerPtr getCSVWorker();
+
+    void setCSVWorker(CSVWorkerPtr);
     /* CSV */
 
     /* Thread */

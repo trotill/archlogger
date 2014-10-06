@@ -52,7 +52,7 @@ bool SWAParser::validate(
     }
 }
 
-bool SWAParser::parseData(const uint8_t* input)
+void SWAParser::parseData(const uint8_t* input)
 {
     const uint8_t typeId = input[0];
     const uint16_t dataLength = ((uint16_t)input[2] << 8) | (uint16_t)input[3];
@@ -60,8 +60,5 @@ bool SWAParser::parseData(const uint8_t* input)
 
     if (validate(typeId, dataLength, data) && __callback) {
         __callback(typeId, dataLength, data);
-        return true;
     }
-
-    return false;
 }

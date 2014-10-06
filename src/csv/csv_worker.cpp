@@ -10,34 +10,28 @@ CSVWorker::CSVWorker() :
     __csvDataSize(1),
     __csvData(1)
 {
-    __csvDataEmpty = true;
+    setDataEmpty();
 }
 
 CSVWorker::CSVWorker(const std::string& filename, const char delimiter) :
+    __csvDataSize(1),
     __csvData(1)
 {
-    __file.open(filename.c_str(), std::ofstream::out | std::ofstream::trunc);
-    __delimiter = delimiter;
+    setDataEmpty();
+    setDelimeter(delimiter);
+    getFile().open(filename.c_str(), std::ofstream::out | std::ofstream::trunc);
 }
 
 CSVWorker::~CSVWorker()
 {
-    if (__file.is_open()) {
-        __file.flush();
-        __file.close();
-    }
+    fileClose();
 }
 
-bool CSVWorker::setNewFile(const std::string& filename)
+bool CSVWorker::setFile(const std::string& filename)
 {
-    if (__file.is_open()) {
-        __file.flush();
-        __file.close();
-    }
-
-    __file.open (filename.c_str(), std::ofstream::out | std::ofstream::trunc);
-
-    return (__file.is_open());
+    fileClose();
+    getFile().open (filename.c_str(), std::ofstream::out | std::ofstream::trunc);
+    return fileIsOpen();
 }
 
 void CSVWorker::setMaxSize(const uint32_t size)
@@ -49,7 +43,7 @@ void CSVWorker::setMaxSize(const uint32_t size)
     }
 }
 
-void CSVWorker::setNewDelimeter(const char delimiter)
+void CSVWorker::setDelimeter(const char delimiter)
 {
     __delimiter = delimiter;
 }
@@ -57,12 +51,10 @@ void CSVWorker::setNewDelimeter(const char delimiter)
 void CSVWorker::addData(const uint32_t index, const uint8_t* data, const uint16_t dataLength)
 {
     // ignore out of range
-    if (index >= __csvDataSize)
+    if (index >= getDataSize())
         return;
 
-    const char* c_data = reinterpret_cast<const char*>(data);
-
-    __csvData[index] = std::string(c_data, dataLength);
+    memcpy(&__csvData[index], data, dataLength);
 
     setDataNotEmpty();
 }
@@ -81,8 +73,7 @@ std::string& CSVWorker::prepareData(std::string& csvData) const
         (csvData.find(';') != std::string::npos) ||
         (csvData.find('\r') != std::string::npos) ||
         (csvData.find('\n') != std::string::npos)) {
-        csvData.insert(0, "\"");
-        csvData += '"';
+        csvData = '"' + csvData + '"';
     }
     return csvData;
 }
@@ -112,26 +103,74 @@ void CSVWorker::setDataSize(const uint32_t size)
     __csvDataSize = size;
 }
 
+std::ofstream& CSVWorker::getFile()
+{
+    return __file;
+}
+
+bool CSVWorker::fileIsOpen()
+{
+    return getFile().is_open();
+}
+
+void CSVWorker::fileClose()
+{
+    if (fileIsOpen()) {
+        getFile().flush();
+        getFile().close();
+    }
+}
+
+char CSVWorker::getDelimeter() const
+{
+    return __delimiter;
+}
+
 bool CSVWorker::save()
 {
     // skip empty data
     if (isDataEmpty())
         return false;
 
-    if (!__file.is_open())
+    if (!getFile().is_open())
         return false;
 
     // don't write last element
+
+    char arr[65535];
+    std::string str;
+
     uint32_t size = getDataSize() - 1;
     for (size_t i = 0; i < size; ++i) {
-        __file << prepareData(__csvData[i]) << __delimiter;
+        // empty string
+        if (__csvData[i][0] == 0x00) {
+            getFile() << getDelimeter();
+        } else {
+            memcpy(&arr, &(__csvData[i]), 65535);
+            // skip null bytes in the end of string
+            str = std::string(arr, strlen(arr));
+            getFile() << prepareData(str) << getDelimeter();
+        }
     }
 
-    __file << prepareData(__csvData[size]) << "\r\n";
-    __file.flush();
+    // empty string
+    if (__csvData[size][0] == 0x00) {
+        getFile() << "\r\n";
+    } else {
+        memcpy(&arr, &(__csvData[size]), 65535);
+        // skip null bytes in the end of string
+        str = std::string(arr, strlen(arr));
+        getFile() << prepareData(str) << "\r\n";
+    }
 
-    __csvData.clear();
+    getFile().flush();
+
     __csvData.resize(getDataSize());
+
+    // __csvData.clear();
+    for (size_t i = 0; i < size; ++i)
+        memset(&__csvData[i], 0, 65535);
+
     setDataEmpty();
 
     return true;

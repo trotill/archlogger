@@ -74,7 +74,7 @@ private:
     bool        __swaHelloReceive;
 
 public:
-    bool parseSWA(const uint8_t*) const;
+    void parseSWA(const uint8_t*);
 
     void setSWAHelloReceive();
     bool getSWAHelloReceive() const;
@@ -95,6 +95,8 @@ protected:
 public:
     boost::asio::ip::udp::socket*   getUdpSocket();
     boost::asio::ip::udp::endpoint* getUdpRemoteEndpoint();
+    void setUdpSocket();
+    void setUdpRemoteEndpoint();
     /* UDP */
 
     /* Thread */

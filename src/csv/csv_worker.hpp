@@ -10,16 +10,17 @@
 #include <vector>
 
 /* boost headers */
+#include <boost/array.hpp>
 #include <boost/shared_ptr.hpp>
 
 class CSVWorker
 {
 private:
-    std::ofstream				__file;
-    char 						__delimiter;
+    std::ofstream               __file;
+    char                        __delimiter;
     uint32_t                    __csvDataSize;
     bool                        __csvDataEmpty;
-    std::vector<std::string>    __csvData;
+    std::vector< boost::array<uint8_t, 65535> > __csvData;
 
     std::string& prepareData(std::string&) const;
 
@@ -30,13 +31,19 @@ private:
     uint32_t getDataSize() const;
     void setDataSize(const uint32_t);
 
+    std::ofstream& getFile();
+    bool fileIsOpen();
+    void fileClose();
+
+    char getDelimeter() const;
+
 public:
     CSVWorker();
     CSVWorker(const std::string&, const char);
     ~CSVWorker();
 
-    bool setNewFile(const std::string&);
-    void setNewDelimeter(const char);
+    bool setFile(const std::string&);
+    void setDelimeter(const char);
     bool save();
     void setMaxSize(const uint32_t);
     void addData(const uint32_t, const uint8_t*, const uint16_t);

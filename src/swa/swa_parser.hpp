@@ -22,7 +22,7 @@ public:
     SWAParser(const SWACallback&);
     ~SWAParser();
 
-    bool parseData(const uint8_t*);
+    void parseData(const uint8_t*);
 };
 
 typedef boost::shared_ptr<SWAParser> SWAParserPtr;

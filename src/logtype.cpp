@@ -71,19 +71,8 @@ LogType::LogType(LogType& copy):
     __swaHelloReceive = false;
     __terminate = false;
 
-    __udp_socket = new boost::asio::ip::udp::socket(
-        __io_service,
-        boost::asio::ip::udp::endpoint(
-            boost::asio::ip::address::from_string(copy.getIpAddress()),
-            copy.getSourcePort()));
-    if (__udp_socket != NULL) {
-        boost::asio::socket_base::receive_buffer_size option(copy.getUdpBufferSize());
-        __udp_socket->set_option(option);
-    }
-    __udp_remote_endpoint = new boost::asio::ip::udp::endpoint(
-        boost::asio::ip::udp::endpoint(
-            boost::asio::ip::address::from_string(copy.getIpAddress()),
-            copy.getRemotePort()));
+    __udp_socket = NULL;
+    __udp_remote_endpoint = NULL;
 }
 
 LogType::~LogType()
@@ -277,9 +266,9 @@ bool LogType::parseUdpBufferSize()
     return true;
 }
 
-bool LogType::parseSWA(const uint8_t* input) const
+void LogType::parseSWA(const uint8_t* input)
 {
-    return __swaParser.get()->parseData(input);
+    __swaParser.get()->parseData(input);
 }
 
 void LogType::callbackSWA(const uint8_t typeId, const uint16_t dataLength, const uint8_t* data)
@@ -383,6 +372,27 @@ boost::asio::ip::udp::endpoint*
 LogType::getUdpRemoteEndpoint()
 {
     return __udp_remote_endpoint;
+}
+
+void LogType::setUdpSocket()
+{
+    __udp_socket = new boost::asio::ip::udp::socket(
+        __io_service,
+        boost::asio::ip::udp::endpoint(
+            boost::asio::ip::address::from_string(getIpAddress()),
+            getSourcePort()));
+    if (__udp_socket != NULL) {
+        boost::asio::socket_base::receive_buffer_size option(getUdpBufferSize());
+        __udp_socket->set_option(option);
+    }
+}
+
+void LogType::setUdpRemoteEndpoint()
+{
+    __udp_remote_endpoint = new boost::asio::ip::udp::endpoint(
+        boost::asio::ip::udp::endpoint(
+            boost::asio::ip::address::from_string(getIpAddress()),
+            getRemotePort()));
 }
 
 void LogType::closeUdp()
