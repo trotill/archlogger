@@ -7,7 +7,7 @@ archlogger
 
 ####Generate configure:
 
-    autoreconfig -ifv
+    autoreconf -ifv
 
 ####Configure archlogger:
 
