@@ -1018,7 +1018,7 @@ void LogTypeTimeFolder::callbackSWA(const uint8_t typeId, const uint16_t dataLen
                 }
                 // skip after out of range index inside
                 if (getCSVWorker())
-                    getCSVWorker()->addData(index, data + 1, dataLength - 2);
+                    getCSVWorker()->addData(index, data + 1, dataLength - 1);
             }
 
             break;
