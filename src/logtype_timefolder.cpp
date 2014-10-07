@@ -663,6 +663,8 @@ void LogTypeTimeFolder::reindex()
         
     }
 
+    sync();
+
     pthread_mutex_unlock(&lock_dir);
     pthread_mutex_unlock(&lock_file);
 }
