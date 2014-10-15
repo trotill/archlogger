@@ -11,13 +11,19 @@ CSVWorker::CSVWorker() :
     __csvData(1)
 {
     setDataEmpty();
+    setEscapeString(true);
 }
 
-CSVWorker::CSVWorker(const std::string& filename, const char delimiter) :
+CSVWorker::CSVWorker(
+    const std::string& filename,
+    const char delimiter,
+    const bool escapeString)
+    :
     __csvDataSize(1),
     __csvData(1)
 {
     setDataEmpty();
+    setEscapeString(escapeString);
     setDelimeter(delimiter);
     getFile().open(filename.c_str(), std::ofstream::out | std::ofstream::trunc);
 }
@@ -48,6 +54,11 @@ void CSVWorker::setDelimeter(const char delimiter)
     __delimiter = delimiter;
 }
 
+void CSVWorker::setEscapeString(const bool escapeString)
+{
+    __escapeString = escapeString;
+}
+
 void CSVWorker::addData(const uint32_t index, const uint8_t* data, const uint16_t dataLength)
 {
     // ignore out of range
@@ -61,7 +72,9 @@ void CSVWorker::addData(const uint32_t index, const uint8_t* data, const uint16_
 
 std::string& CSVWorker::prepareData(std::string& csvData) const
 {
-    if (csvData.empty())
+    // empty input string
+    // OR not need prepare escape
+    if (csvData.empty() || getEscapeString())
         return csvData;
 
     boost::replace_all(csvData, "\"", "\"\"");
@@ -126,6 +139,11 @@ char CSVWorker::getDelimeter() const
     return __delimiter;
 }
 
+bool CSVWorker::getEscapeString() const
+{
+    return __escapeString;
+}
+
 bool CSVWorker::save()
 {
     // skip empty data
@@ -167,7 +185,6 @@ bool CSVWorker::save()
 
     __csvData.resize(getDataSize());
 
-    // __csvData.clear();
     for (size_t i = 0; i < size; ++i)
         memset(&__csvData[i], 0, 65535);
 

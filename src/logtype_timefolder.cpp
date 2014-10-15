@@ -485,6 +485,23 @@ bool LogTypeTimeFolder::parseDelimeter()
     return true;
 }
 
+bool LogTypeTimeFolder::parseCSVEscapeString()
+{
+    getCSVWorker()->setEscapeString ( iniGetValue( ini::TF_SECTION,
+        ini::VAR_TF_SWA_CSV_ESCAPE_STRING, ini::settings::tf::csvEscapeString ) );
+
+    if (iniGetError())
+    {
+        writeError( "TimeFolder: Can't get 'CSV Escape String'" );
+        return false;
+    }
+
+    writeInfo( "TimeFolder: CSV Escape String = '%s'",
+        getCSVWorker()->getEscapeString() ? "true" : "false" );
+
+    return true;
+}
+
 void LogTypeTimeFolder::setDatetimeSync()
 {
     __datetimeSync = (getLocalTime().date().year() >= 2014);
@@ -861,7 +878,8 @@ bool LogTypeTimeFolder::validate()
         && parseMaxSize()
         && parseMinFree()
         && parseFreqFreeSize()
-        && parseDelimeter();
+        && parseDelimeter()
+        && parseCSVEscapeString();
 }
 
 

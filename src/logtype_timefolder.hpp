@@ -32,6 +32,7 @@ private:
     bool parseMinFree();
     bool parseFreqFreeSize();
     bool parseDelimeter();
+    bool parseCSVEscapeString();
 
 public:
     void setPath(const std::string&);

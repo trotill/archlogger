@@ -24,6 +24,7 @@ namespace ini
     const static std::string VAR_TF_SWA_MIN_FREE             = "tfSWAMinFree";
     const static std::string VAR_TF_SWA_FREQ_FREE_SIZE       = "tfSWAFreqFreeSize";
     const static std::string VAR_TF_SWA_DELIMETER            = "tfSWADelimeter";
+    const static std::string VAR_TF_SWA_CSV_ESCAPE_STRING    = "tfSWACSVEscapeString";
 
     /* default values */
     namespace settings {
@@ -43,6 +44,7 @@ namespace ini
             static const uint64_t minFree               = 10 * 1024 * 1024;
             static const uint64_t freqFreeSize          = 1000;
             static const char delimeter                 = ',';
+            static const bool csvEscapeString           = true;
         }
     }
 }

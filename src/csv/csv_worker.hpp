@@ -20,6 +20,7 @@ private:
     char                        __delimiter;
     uint32_t                    __csvDataSize;
     bool                        __csvDataEmpty;
+    bool                        __escapeString;
     std::vector< boost::array<uint8_t, 65535> > __csvData;
 
     std::string& prepareData(std::string&) const;
@@ -39,14 +40,18 @@ private:
 
 public:
     CSVWorker();
-    CSVWorker(const std::string&, const char);
+    CSVWorker(const std::string&, const char, const bool = true);
     ~CSVWorker();
 
     bool setFile(const std::string&);
     void setDelimeter(const char);
-    bool save();
     void setMaxSize(const uint32_t);
+    void setEscapeString(const bool);
+
+    bool getEscapeString() const;
+
     void addData(const uint32_t, const uint8_t*, const uint16_t);
+    bool save();
 };
 
 typedef boost::shared_ptr<CSVWorker> CSVWorkerPtr;
