@@ -74,7 +74,7 @@ std::string& CSVWorker::prepareData(std::string& csvData) const
 {
     // empty input string
     // OR not need prepare escape
-    if (csvData.empty() || getEscapeString())
+    if (csvData.empty() || !getEscapeString())
         return csvData;
 
     boost::replace_all(csvData, "\"", "\"\"");
